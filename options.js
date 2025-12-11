@@ -7,7 +7,6 @@ let pendingConfig = null;
 document.addEventListener('DOMContentLoaded', async () => {
     await checkPendingConfig();
     await loadConfigs();
-    setupEventListeners();
 });
 
 // 检查待确认的配置
@@ -31,16 +30,16 @@ async function checkPendingConfig() {
 // 显示待确认配置对话框
 function showPendingConfigDialog() {
     if (!pendingConfig) return;
-    
+
     const customName = prompt(
         `检测到新的TOTP配置：\n\n` +
         `发行方: ${pendingConfig.issuer}\n` +
         `账户: ${pendingConfig.account}\n` +
         `密钥: ${pendingConfig.key.substring(0, 8)}...\n\n` +
-        `请输入自定义配置名称:`, 
+        `请输入自定义配置名称:`,
         pendingConfig.name
     );
-    
+
     if (customName && customName.trim()) {
         addPendingConfig(customName.trim());
     }
@@ -52,14 +51,14 @@ async function addPendingConfig(customName) {
         // 重新加载最新配置，避免覆盖现有配置
         const result = await chrome.storage.sync.get(['totpConfigs']);
         const currentConfigs = result.totpConfigs || [];
-        
+
         // 检查密钥是否重复
         const existingIndex = currentConfigs.findIndex(c => c.key === pendingConfig.key);
         if (existingIndex >= 0) {
             alert('该密钥已存在，无法添加重复配置');
             return;
         }
-        
+
         // 添加新配置到现有配置中
         const configToAdd = {
             name: customName,
@@ -67,15 +66,15 @@ async function addPendingConfig(customName) {
             issuer: pendingConfig.issuer,
             account: pendingConfig.account
         };
-        
+
         currentConfigs.push(configToAdd);
         await chrome.storage.sync.set({ totpConfigs: currentConfigs });
-        
+
         alert(`配置 "${customName}" 添加成功！`);
-        
+
         // 重新加载配置
         await loadConfigs();
-        
+
     } catch (error) {
         console.error('添加配置失败:', error);
         alert('添加配置失败');
@@ -126,16 +125,16 @@ function updateSaveButton() {
 // 高亮变更的配置项
 function highlightChangedItems() {
     const configItems = document.querySelectorAll('.config-item');
-    
+
     configItems.forEach((item, index) => {
         if (index < configs.length) {
             const current = configs[index];
-            
+
             // 跳过已删除的项的高亮处理
             if (current._deleted) {
                 return;
             }
-            
+
             // 检查是否为新增项
             if (current._isNew) {
                 item.classList.add('new-item');
@@ -148,22 +147,22 @@ function highlightChangedItems() {
                 });
                 return;
             }
-            
+
             // 检查现有项的变更
             if (index < originalConfigs.length) {
                 const original = originalConfigs[index];
                 const configChanged = JSON.stringify(current) !== JSON.stringify(original);
-                
+
                 if (configChanged) {
                     item.classList.add('changed');
-                    
+
                     // 检查每个字段的变更并高亮
                     const inputs = item.querySelectorAll('input[data-field]');
                     inputs.forEach(input => {
                         const field = input.dataset.field;
                         const currentValue = current[field] || '';
                         const originalValue = original[field] || '';
-                        
+
                         if (currentValue !== originalValue) {
                             input.classList.add('field-changed');
                         } else {
@@ -187,7 +186,7 @@ function highlightChangedItems() {
 function renderConfigs() {
     const container = document.getElementById('configs');
     container.innerHTML = '';
-    
+
     if (configs.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
@@ -197,14 +196,14 @@ function renderConfigs() {
         `;
         return;
     }
-    
+
     configs.forEach((config, index) => {
         const div = document.createElement('div');
         div.className = 'config-item';
-        
+
         const isDeleted = config._deleted;
         const isNew = config._isNew;
-        
+
         // 根据状态决定按钮类型
         let deleteButtonHtml;
         if (isNew) {
@@ -217,7 +216,7 @@ function renderConfigs() {
             // 现有项正常状态
             deleteButtonHtml = `<button class="btn btn-danger" data-action="remove" data-index="${index}">🗑️ 删除</button>`;
         }
-        
+
         div.innerHTML = `
             <div class="config-header">
                 <div class="config-title">${config.name || `配置 ${index + 1}`}</div>
@@ -268,17 +267,17 @@ function renderConfigs() {
                 </div>
             </div>
         `;
-        
+
         // 添加状态样式
         if (isNew) {
             div.classList.add('new-item');
         } else if (isDeleted) {
             div.classList.add('deleted');
         }
-        
+
         container.appendChild(div);
     });
-    
+
     // 添加事件监听器
     addEventListeners();
     checkForChanges();
@@ -294,7 +293,7 @@ function addEventListeners() {
             updateConfig(index, field, e.target.value);
         });
     });
-    
+
     // 删除按钮事件
     document.querySelectorAll('button[data-action="remove"]').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -302,7 +301,7 @@ function addEventListeners() {
             removeConfig(index);
         });
     });
-    
+
     // 撤销删除按钮事件
     document.querySelectorAll('button[data-action="undo"]').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -339,7 +338,7 @@ function addConfig() {
         _isNew: true  // 标记为新增
     });
     renderConfigs();
-    
+
     // 滚动到新添加的配置
     setTimeout(() => {
         const newConfig = document.querySelector('.config-item:last-child');
@@ -352,7 +351,7 @@ function addConfig() {
 // 删除配置
 function removeConfig(index) {
     const config = configs[index];
-    
+
     if (config._isNew) {
         // 新增项直接删除
         configs.splice(index, 1);
@@ -360,7 +359,7 @@ function removeConfig(index) {
         // 现有项软删除
         config._deleted = true;
     }
-    
+
     renderConfigs();
 }
 
@@ -380,12 +379,12 @@ function showSaveNotification(success, message) {
             <span class="notification-text">${message}</span>
         </div>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     // 显示动画
     setTimeout(() => notification.classList.add('show'), 10);
-    
+
     // 自动隐藏
     setTimeout(() => {
         notification.classList.remove('show');
@@ -399,15 +398,15 @@ async function saveConfigs() {
     if (!hasChanges) {
         return;
     }
-    
+
     const saveBtn = event.target;
     const originalText = saveBtn.textContent;
-    
+
     // 显示保存中状态
     saveBtn.textContent = '⏳ 保存中...';
     saveBtn.disabled = true;
     saveBtn.style.opacity = '0.7';
-    
+
     try {
         // 过滤掉删除的配置，移除内部标记
         const configsToSave = configs
@@ -416,23 +415,23 @@ async function saveConfigs() {
                 const { _deleted, _isNew, ...cleanConfig } = config;
                 return cleanConfig;
             });
-        
+
         await chrome.storage.sync.set({ totpConfigs: configsToSave });
-        
+
         // 更新原始配置
         configs = configsToSave.map(config => ({ ...config, _deleted: false, _isNew: false }));
         originalConfigs = JSON.parse(JSON.stringify(configs));
         hasChanges = false;
-        
+
         // 重新渲染以清除所有状态
         renderConfigs();
         updateSaveButton();
         showSaveNotification(true, '配置保存成功！');
-        
+
     } catch (error) {
         console.error('保存失败:', error);
         showSaveNotification(false, '保存失败: ' + error.message);
-        
+
         // 恢复按钮状态
         saveBtn.textContent = originalText;
     } finally {
@@ -459,19 +458,23 @@ function exportConfigs() {
                 account: c.account || ''
             }))
         };
-        
+
         const dataStr = JSON.stringify(exportData, null, 2);
-        const dataBlob = new Blob([dataStr], {type: 'application/json'});
-        
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
         link.download = `totp-configs-${new Date().toISOString().split('T')[0]}.json`;
         link.click();
-        
-        showNotification('配置导出成功', 'success');
+
     } catch (error) {
         console.error('导出失败:', error);
-        showNotification('导出失败: ' + error.message, 'error');
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'images/get_started128.png',
+            title: 'TOTP配置导出失败',
+            message: '导出失败: ' + error.message
+        });
     }
 }
 
@@ -484,32 +487,32 @@ function importConfigs() {
 function handleFileImport(event) {
     const file = event.target.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         try {
             const importData = JSON.parse(e.target.result);
-            
+
             if (!importData.configs || !Array.isArray(importData.configs)) {
                 throw new Error('无效的配置文件格式');
             }
-            
+
             let importCount = 0;
             let skipCount = 0;
-            
+
             for (const config of importData.configs) {
                 if (!config.name || !config.key) {
                     skipCount++;
                     continue;
                 }
-                
+
                 // 检查是否已存在相同密钥
                 const existingIndex = configs.findIndex(c => c.key === config.key);
                 if (existingIndex >= 0) {
                     skipCount++;
                     continue;
                 }
-                
+
                 // 添加配置
                 configs.push({
                     name: config.name,
@@ -525,31 +528,46 @@ function handleFileImport(event) {
                 });
                 importCount++;
             }
-            
+
             if (importCount > 0) {
                 checkForChanges();
                 renderConfigs();
-                showNotification(`成功导入 ${importCount} 个配置，跳过 ${skipCount} 个重复配置`, 'success');
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: 'images/get_started128.png',
+                    title: 'TOTP配置导入成功',
+                    message: '成功导入 ${importCount} 个配置，跳过 ${skipCount} 个重复配置'
+                });
             } else {
-                showNotification('没有新配置可导入', 'error');
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: 'images/get_started128.png',
+                    title: 'TOTP配置导入失败',
+                    message: '没有新配置可导入'
+                });
             }
-            
+
         } catch (error) {
             console.error('导入失败:', error);
-            showNotification('导入失败: ' + error.message, 'error');
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'images/get_started128.png',
+                title: 'TOTP配置导入失败',
+                message: '导入失败: ' + error.message
+            });
         }
-        
+
         // 清空文件输入
         event.target.value = '';
     };
-    
+
     reader.readAsText(file);
 }
 
 // 页面加载时初始化
 document.addEventListener('DOMContentLoaded', () => {
     loadConfigs();
-    
+
     // 添加按钮事件监听器
     document.querySelector('.btn-success').addEventListener('click', addConfig);
     document.querySelector('.btn-primary').addEventListener('click', saveConfigs);
