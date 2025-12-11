@@ -1,0 +1,25 @@
+{
+  "name": "totp自动填充",
+  "description": "Build an Extension!",
+  "version": "1.0",
+  "manifest_version": 3,
+  "icons": {
+    "128": "/images/get_started128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TOTP动态码"
+  },
+  "options_page": "options.html",
+  "permissions": ["storage", "activeTab", "notifications"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+   {
+     "matches": ["http://*/*", "https://*/*"],
+     "run_at": "document_end",
+     "js": ["security.js", "detect.js", "lib/jsqr.js", "qr-scanner.js"]
+   }
+  ]
+}

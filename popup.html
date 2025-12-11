@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h3>🔐 TOTP动态码</h3>
+      <div class="header-buttons">
+        <button id="scan-qr-btn" class="scan-btn">
+          <span>📷</span>
+          <span>扫码</span>
+        </button>
+        <button id="config-btn" class="config-btn">
+          <span>⚙️</span>
+          <span>配置</span>
+        </button>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+      </div>
+    </div>
+    <div id="totp-list"></div>
+  </div>
+  
+  <div id="config-confirm-modal" class="qr-modal">
+    <div class="qr-content">
+      <h4>确认配置信息</h4>
+      <div class="config-form">
+        <label>配置名称:</label>
+        <input type="text" id="config-name-input" placeholder="请输入配置名称">
+        <label>密钥:</label>
+        <input type="text" id="config-key-display" readonly>
+        <label>发行方:</label>
+        <input type="text" id="config-issuer-display" readonly>
+      </div>
+      <div class="scan-controls">
+        <button id="confirm-config-btn" class="btn btn-primary">确认添加</button>
+        <button id="cancel-config-btn" class="btn btn-secondary">取消</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="qr-scan-modal" class="qr-modal">
+    <div class="qr-content">
+      <h4>扫描二维码</h4>
+      <div class="scan-instructions">
+        <p>点击"开始选择"按钮，然后在页面上拖拽选择包含二维码的区域</p>
+      </div>
+      <div class="scan-controls">
+        <button id="start-select-btn" class="btn btn-primary">开始选择</button>
+        <button id="test-parse-btn" class="btn btn-secondary">测试解析</button>
+        <button id="simulate-qr-btn" class="btn btn-secondary">模拟扫码</button>
+        <button id="cancel-scan-btn" class="btn btn-secondary">取消</button>
+      </div>
+      <div id="scan-result" class="scan-result"></div>
+    </div>
+  </div>
+  
+  <div id="qr-modal" class="qr-modal">
+    <div class="qr-content">
+      <h4 id="qr-title"></h4>
+      <div id="qr-code"></div>
+      <button class="close-btn" id="close-qr-btn">关闭</button>
+    </div>
+  </div>
+  
+  <script src="lib/qrcode.min.js"></script>
+  <script src="lib/jsqr.js"></script>
+  <script src="security.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
