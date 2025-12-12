@@ -1,6 +1,6 @@
 {
   "name": "totp自动填充",
-  "description": "Build an Extension!",
+  "description": "totp密钥管理、双因子认证验证码自动填充插件",
   "version": "1.0",
   "manifest_version": 3,
   "icons": {
